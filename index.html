@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>分度器の名人</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+:root{--bg:#E9F1F7;--grid:#D3DFEA;--ink:#1B2A41;--blue:#1F5FBF;--orange:#D9680B;--red:#D7263D;--plastic:rgba(255,255,255,.75);--card:#fff;--ok:#1E8E5A;--ng:#C62839;--line:#B9C8D6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14202C;--grid:#1D2D3C;--ink:#E8EEF5;--blue:#6AA6FF;--orange:#FFA24D;--red:#FF6B7D;--plastic:rgba(255,255,255,.08);--card:#1E2E3E;--ok:#4CD08C;--ng:#FF7F8E;--line:#3A4F63}}
+:root[data-theme="dark"]{--bg:#14202C;--grid:#1D2D3C;--ink:#E8EEF5;--blue:#6AA6FF;--orange:#FFA24D;--red:#FF6B7D;--plastic:rgba(255,255,255,.08);--card:#1E2E3E;--ok:#4CD08C;--ng:#FF7F8E;--line:#3A4F63}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;font-weight:500;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+#app{max-width:1100px;margin:0 auto;padding:16px}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+h1{font-size:clamp(34px,6vw,56px);font-weight:900;margin:8px 0 4px}
+.lead{font-size:clamp(18px,2.6vw,24px);margin:0 0 20px}
+#start{text-align:center;padding-top:5vh}
+.legend{display:inline-flex;gap:18px;flex-wrap:wrap;justify-content:center;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 18px;margin-bottom:24px;font-size:18px}
+.dot{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-2px}
+.levels{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.big{min-height:84px;padding:12px 32px;font-size:26px;font-weight:700;background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink)}
+.big small{display:block;font-size:15px;font-weight:500}
+.big:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.game{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
+.stage{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:10px 14px 6px}
+.bar{display:flex;justify-content:space-between;font-size:20px;font-weight:700;padding:4px 6px}
+svg{width:100%;height:auto;display:block}
+.panel{display:flex;flex-direction:column;gap:14px}
+.ask{font-size:26px;font-weight:900;margin:6px 0 0}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.choice{min-height:96px;font-size:40px;font-weight:900;background:var(--card);border:3px solid var(--ink);border-radius:20px}
+.choice.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.choice.ng{background:var(--ng);border-color:var(--ng);color:#fff}
+.choice:disabled{cursor:default}
+.hint{align-self:flex-start;min-height:56px;padding:8px 22px;font-size:20px;font-weight:700;background:transparent;border:3px dashed var(--ink);border-radius:30px}
+#fb{min-height:110px;font-size:20px;line-height:1.6;background:var(--card);border-left:8px solid var(--line);border-radius:6px 14px 14px 6px;padding:12px 16px}
+#fb.ok{border-color:var(--ok)}#fb.ng{border-color:var(--ng)}
+.next{min-height:68px;font-size:24px;background:var(--ink);color:var(--bg);border:3px solid var(--ink);border-radius:18px;font-weight:700}
+#result{text-align:center;padding-top:4vh}
+.score{font-size:clamp(48px,9vw,88px);font-weight:900;margin:0}
+.rows{display:inline-block;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 24px;font-size:22px;line-height:1.9;margin:14px 0}
+.tip{font-size:20px;max-width:620px;margin:0 auto 24px;line-height:1.7}
+.mkbar{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:20px;font-weight:700;margin-bottom:6px}
+.mkask{text-align:center;font-size:clamp(28px,5vw,44px);margin:4px 0 10px}
+#msvg{touch-action:none}
+.mkmsg{min-height:56px;font-size:20px;line-height:1.6;text-align:center;margin:10px 0}
+.mkctl{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.mkctl .big{min-height:72px;font-size:24px;padding:10px 26px}
+.mkctl .next{padding:10px 44px}
+@media (max-width:760px){.game{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.big:active{transform:none}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section id="start">
+  <h1>分度器の名人</h1>
+  <p class="lead">めもりを よむ：どっちの 0 から 読むのかな？</p>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--blue)"></i>右の 0 からの 数字</span>
+    <span><i class="dot" style="background:var(--orange)"></i>左の 0 からの 数字</span>
+  </div>
+  <div class="levels">
+    <button class="big" data-step="10">10ど きざみ<small>まずは ここから</small></button>
+    <button class="big" data-step="5">5ど きざみ<small>ちょうせん</small></button></div><p class="lead" style="margin-top:34px">ぶんどきを うごかして 角を つくる</p><div class="levels"><button class="big" id="mkstart">角を つくろう ①<small>めもりを つかう</small></button><button class="big" id="mkstart2">角を つくろう ②<small>めもりなし・かんで あわせる</small></button>
+  </div>
+</section>
+
+<section id="game" class="game" hidden>
+  <div class="stage">
+    <div class="bar"><button class="hint" id="rback">もどる</button><span id="no"></span><span id="sc"></span></div>
+    <svg id="svg" viewBox="0 0 600 345" role="img" aria-label="分度器と角">
+      <g id="proto"></g><g id="dyn"></g><g id="hl"></g>
+    </svg>
+  </div>
+  <aside class="panel">
+    <p class="ask">赤い角は 何度？</p>
+    <div class="choices"><button class="choice" id="c0"></button><button class="choice" id="c1"></button></div>
+    <button class="hint" id="hint">ヒント</button>
+    <div id="fb" aria-live="polite">きじゅんの線（こい線）は どっちむきかな？</div>
+    <button class="next" id="next" hidden>つぎへ</button>
+  </aside>
+</section>
+
+<section id="mk" hidden>
+  <div class="mkbar"><button class="hint" id="mkback">もどる</button><span id="mkno"></span><span id="mksum"></span></div>
+  <p class="ask mkask" id="mkask"></p>
+  <div class="stage"><svg id="msvg" viewBox="0 0 1000 500" role="img" aria-label="分度器で角をつくる"><g id="mpg" style="cursor:grab"></g><g id="mbase" pointer-events="none"></g><g id="mray" pointer-events="none"></g><g id="mans" pointer-events="none"></g></svg></div>
+  <p class="mkmsg" id="mkmsg" aria-live="polite"></p>
+  <div class="mkctl"><button class="big" id="m-" hidden>−1°</button><button class="big" id="m+" hidden>＋1°</button><button class="big" id="mre" hidden>ぶんどきを おきなおす</button><button class="big" id="mok" hidden>この角度に きめる</button><button class="next" id="mnext" hidden>つぎへ</button></div>
+</section>
+
+<section id="mres" hidden>
+  <p class="lead">角を つくろう けっか</p>
+  <p class="score" id="mrs"></p>
+  <div class="rows" id="mrr"></div>
+  <p class="tip" id="mrt"></p>
+  <div class="levels"><button class="big" id="magain">もういちど</button><button class="big" id="mmenu">さいしょの画面へ</button></div>
+</section>
+
+<section id="result" hidden>
+  <p class="lead">けっか</p>
+  <p class="score" id="rs"></p>
+  <div class="rows" id="rr"></div>
+  <p class="tip" id="rt"></p>
+  <div class="levels">
+    <button class="big" id="again">もういちど</button>
+    <button class="big" id="menu">レベルを かえる</button>
+  </div>
+</section>
+
+</div>
+<script>
+const NS="http://www.w3.org/2000/svg",cx=300,cy=290,R=250,TOTAL=5;
+const $=id=>document.getElementById(id);
+const P=(a,r)=>[cx+r*Math.cos(a*Math.PI/180),cy-r*Math.sin(a*Math.PI/180)];
+const S=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let step=10,qs=[],i=0,score=0,log=[],answered=false;
+
+function txt(g,x,y,s,fill,size,w){const t=S("text",{x,y,fill,"text-anchor":"middle","dominant-baseline":"central","font-size":size,"font-weight":w||700},g);t.textContent=s;return t}
+
+function build(){
+  const g=$("proto");
+  S("path",{d:`M${cx-R} ${cy}A${R} ${R} 0 0 1 ${cx+R} ${cy}L${cx+R} ${cy+24}L${cx-R} ${cy+24}Z`,fill:"var(--plastic)",stroke:"var(--ink)","stroke-width":2},g);
+  for(let a=0;a<=180;a+=5){
+    const l=a%10?9:16,[x1,y1]=P(a,R),[x2,y2]=P(a,R-l);
+    S("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":a%10?1:1.6},g);
+  }
+  for(let v=0;v<=180;v+=10){
+    let [x,y]=P(v,R-32);txt(g,x,y,v,"var(--blue)",15);
+    [x,y]=P(180-v,R-56);txt(g,x,y,v,"var(--orange)",15);
+  }
+  S("line",{x1:cx-12,y1:cy,x2:cx+12,y2:cy,stroke:"var(--ink)","stroke-width":1.5},g);
+  S("line",{x1:cx,y1:cy-12,x2:cx,y2:cy+12,stroke:"var(--ink)","stroke-width":1.5},g);
+}
+
+function make(){
+  const pool=[];for(let a=step;a<180;a+=step)if(a!==90)pool.push(a);
+  shuf(pool);
+  const sides=shuf([0,0,180,180,Math.random()<.5?0:180]);
+  qs=sides.map((s,k)=>({side:s,ans:pool[k]}));
+}
+
+function show(){
+  const q=qs[i];answered=false;
+  $("no").textContent=`${i+1} / ${TOTAL} もんめ`;
+  $("sc").textContent=`せいかい ${score}`;
+  const ph=q.side===0?q.ans:180-q.ans;
+  const d=$("dyn");d.innerHTML="";$("hl").innerHTML="";
+  const [bx,by]=P(q.side,R+34),[rx,ry]=P(ph,R+34);
+  S("line",{x1:cx,y1:cy,x2:bx,y2:by,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"},d);
+  S("line",{x1:cx,y1:cy,x2:rx,y2:ry,stroke:"var(--red)","stroke-width":6,"stroke-linecap":"round"},d);
+  const [ax,ay]=P(q.side,70),[ex,ey]=P(ph,70);
+  S("path",{d:`M${ax} ${ay}A70 70 0 0 ${q.side===0?0:1} ${ex} ${ey}`,fill:"none",stroke:"var(--red)","stroke-width":4},d);
+  const [mx,my]=P((q.side+ph)/2,104);txt(d,mx,my,"?","var(--red)",30,900);
+  txt(d,q.side===0?cx+R-34:cx-R+34,cy+42,"きじゅんの線","var(--ink)",15);
+  const opts=shuf([q.ans,180-q.ans]);
+  [0,1].forEach(k=>{const b=$("c"+k);b.textContent=opts[k]+"°";b.dataset.v=opts[k];b.className="choice";b.disabled=false});
+  $("hint").disabled=false;
+  setFb("きじゅんの線（こい線）は どっちむきかな？","");
+  $("next").hidden=true;
+}
+
+function setFb(t,c){const f=$("fb");f.textContent=t;f.className=c}
+const sideName=q=>q.side===0?"右":"左";
+const colorWord=q=>q.side===0?"青い":"オレンジ色の";
+
+function ring(q,full){
+  const g=$("hl");g.innerHTML="";
+  const right=q.side===0,c=right?"var(--blue)":"var(--orange)";
+  const pos=v=>right?P(v,R-32):P(180-v,R-56);
+  (full?[0,q.ans]:[0]).forEach(v=>{const [x,y]=pos(v);S("circle",{cx:x,cy:y,r:17,fill:"none",stroke:c,"stroke-width":4},g)});
+}
+
+function pick(v){
+  if(answered)return;answered=true;
+  const q=qs[i],ok=v===q.ans;
+  if(ok)score++;
+  log.push({side:q.side,ok});
+  document.querySelectorAll(".choice").forEach(b=>{
+    b.disabled=true;
+    if(+b.dataset.v===q.ans)b.classList.add("ok");
+    else if(+b.dataset.v===v)b.classList.add("ng");
+  });
+  ring(q,true);
+  const s=sideName(q),c=colorWord(q);
+  if(ok)setFb(`せいかい！ ${s}の 0 から ${c}数字を 読めたね。`,"ok");
+  else setFb(`ざんねん。こたえは ${q.ans}°。きじゅんの線は ${s}むきだから、${s}がわの 0 から ${c}数字を 読むよ。${v}° は はんたいがわの 目もりだよ。`,"ng");
+  $("sc").textContent=`せいかい ${score}`;
+  $("hint").disabled=true;
+  $("next").hidden=false;
+  $("next").textContent=i===TOTAL-1?"けっかを見る":"つぎへ";
+}
+
+function finish(){
+  $("game").hidden=true;$("result").hidden=false;
+  $("rs").textContent=`${score} / ${TOTAL}`;
+  const L=log.filter(x=>x.side===180),Rr=log.filter(x=>x.side===0);
+  const wl=L.filter(x=>!x.ok).length,wr=Rr.filter(x=>!x.ok).length;
+  $("rr").innerHTML=`右むきの もんだい：${Rr.length}もん中 ${Rr.length-wr}もん せいかい<br>左むきの もんだい：${L.length}もん中 ${L.length-wl}もん せいかい`;
+  let tip;
+  if(wl+wr===0)tip="ぜんぶ せいかい！ 5ど きざみにも ちょうせんしてみよう。";
+  else if(wl>wr)tip="左むきで まちがいが おおかったよ。きじゅんの線が 左を むいているときは、左の 0（オレンジ色）から 読もう。";
+  else if(wr>wl)tip="右むきで まちがいが おおかったよ。きじゅんの線が 右を むいているときは、右の 0（青）から 読もう。";
+  else tip="きじゅんの線が むいている がわの 0 を さいしょに さがそう。";
+  $("rt").textContent=tip;
+}
+
+function start(s){
+  step=s;i=0;score=0;log=[];make();
+  $("start").hidden=true;$("result").hidden=true;$("game").hidden=false;show();
+}
+
+build();
+
+/* ===== つくるモード ===== */
+const Q=(a,r)=>[r*Math.cos(a*Math.PI/180),-r*Math.sin(a*Math.PI/180)],MR=180;
+let mq=[],mi=0,mlog=[],st=0,dir=0,Vx=330,Vy=400,pc=[0,0],pr=0,val=90,drag=null,AC=null,jid=0,blank=false;
+const msv=$("msvg"),mpg=$("mpg"),mray=$("mray"),mbase=$("mbase"),mans=$("mans");
+const ac=()=>{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC};
+const beep=()=>{try{const A=ac(),o=A.createOscillator(),g=A.createGain(),t=A.currentTime;o.type="square";o.frequency.value=1500;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);o.connect(g);g.connect(A.destination);o.start(t);o.stop(t+.07)}catch(e){}};
+const nrm=d=>((d+180)%360+360)%360-180;
+const mp=e=>{const r=msv.getBoundingClientRect();return[(e.clientX-r.left)*1000/r.width,(e.clientY-r.top)*500/r.height]};
+(function(){const g=mpg,R=MR;const sc=document.createElementNS(NS,"g");sc.id="msc";
+  S("path",{d:`M${-R} 0A${R} ${R} 0 0 1 ${R} 0L${R} 18L${-R} 18Z`,fill:"var(--plastic)",stroke:"var(--ink)","stroke-width":2},g);
+  for(let a=0;a<=180;a+=5){const l=a%10?7:12,[x1,y1]=Q(a,R),[x2,y2]=Q(a,R-l);S("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":a%10?1:1.5},sc)}
+  for(let v=0;v<=180;v+=10){let [x,y]=Q(v,R-24);txt(sc,x,y,v,"var(--blue)",11);[x,y]=Q(180-v,R-40);txt(sc,x,y,v,"var(--orange)",11)}
+  g.appendChild(sc);S("line",{x1:-R,y1:0,x2:R,y2:0,stroke:"var(--ink)","stroke-width":2.5},g);S("line",{x1:-10,y1:0,x2:10,y2:0,stroke:"var(--ink)"},g);S("line",{x1:0,y1:-10,x2:0,y2:10,stroke:"var(--ink)"},g);
+})();
+const place=()=>mpg.setAttribute("transform",`translate(${pc[0]} ${pc[1]}) rotate(${pr})`);
+function drawBase(){mbase.innerHTML="";const s=dir===0?1:-1;
+  S("line",{x1:Vx,y1:Vy,x2:Vx+s*336,y2:Vy,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"},mbase);
+  txt(mbase,Vx+s*250,Vy+42,"きじゅんの線","var(--ink)",18);
+  S("circle",{cx:Vx,cy:Vy,r:6,fill:"var(--red)"},mbase);
+  if(st===1)S("circle",{cx:Vx,cy:Vy,r:22,fill:"none",stroke:"var(--red)","stroke-width":3,"stroke-dasharray":"6 5"},mbase)}
+function drawRay(){mray.innerHTML="";if(st<3)return;const a=dir===0?val:180-val,[x,y]=Q(a,MR+36);
+  S("line",{x1:Vx,y1:Vy,x2:Vx+x,y2:Vy+y,stroke:"var(--red)","stroke-width":6,"stroke-linecap":"round"},mray);
+  if(st===3)S("circle",{cx:Vx+x,cy:Vy+y,r:14,fill:"var(--red)",stroke:"var(--card)","stroke-width":3},mray)}
+function ui(){const T=mq[mi],m=["","① ぶんどきを ゆびで おさえて、まん中の点を 赤い点に あわせよう","② 赤い点を 中心に まわして、下の線を きじゅんの線に あわせよう",`③ 赤い線を うごかして ${T}° に しよう${blank?"（めもりなし！ かんで）":""}。きまったら「この角度に きめる」`];
+  $("mkmsg").textContent=m[st]||"";
+  ["m-","m+"].forEach(id=>$(id).hidden=st!==3||blank);$("mok").hidden=st!==3;$("mre").hidden=st<2||st>3;
+  drawBase();drawRay()}
+function reset(){pc=[dir===0?790:210,330];pr=(Math.random()<.5?-1:1)*(15+Math.random()*20);val=90;st=1;mans.innerHTML="";ui();place()}
+function mnew(){jid++;dir=Math.random()<.5?0:180;Vx=dir===0?330:670;$("mnext").hidden=true;$("mkno").textContent=`${mi+1} / 5 もんめ`;$("mkask").textContent=`${mq[mi]}° を つくろう`;reset()}
+function moveRay(e){const p=mp(e),dx=p[0]-Vx,dy=Vy-p[1];if(Math.hypot(dx,dy)<25)return;let a=Math.atan2(dy,dx)*180/Math.PI;if(a<0)a=a<-90?180:0;val=dir===0?Math.round(a):180-Math.round(a);drawRay()}
+mpg.addEventListener("pointerdown",e=>{const p=mp(e);
+  if(st===1)drag={ox:pc[0]-p[0],oy:pc[1]-p[1]};
+  else if(st===2)drag={a0:Math.atan2(p[1]-Vy,p[0]-Vx)*180/Math.PI,r0:pr};
+  else return;
+  msv.setPointerCapture(e.pointerId);e.preventDefault()});
+msv.addEventListener("pointerdown",e=>{if(st===3){drag={ray:1};msv.setPointerCapture(e.pointerId);moveRay(e)}});
+msv.addEventListener("pointermove",e=>{if(!drag)return;const p=mp(e);
+  if(st===1){pc=[p[0]+drag.ox,p[1]+drag.oy];if(Math.hypot(pc[0]-Vx,pc[1]-Vy)<20){pc=[Vx,Vy];drag=null;beep();st=2;ui()}place()}
+  else if(st===2){pr=nrm(drag.r0+Math.atan2(p[1]-Vy,p[0]-Vx)*180/Math.PI-drag.a0);if(Math.abs(pr)<5){pr=0;drag=null;beep();st=3;ui()}place()}
+  else if(st===3&&drag.ray)moveRay(e)});
+["pointerup","pointercancel"].forEach(t=>msv.addEventListener(t,()=>{drag=null}));
+function judge(){st=4;const id=++jid,T=mq[mi];
+  ["m-","m+","mok","mre"].forEach(x=>$(x).hidden=true);$("mkmsg").textContent="";mans.innerHTML="";drawRay();
+  const ln=S("line",{x1:Vx,y1:Vy,x2:Vx,y2:Vy,stroke:"var(--ok)","stroke-width":6,"stroke-linecap":"round"},mans);
+  let s0=null;
+  const f=ts=>{if(id!==jid)return;if(s0===null)s0=ts;const p=Math.min(1,(ts-s0)/1400),c=T*(1-Math.pow(1-p,3)),a=dir===0?c:180-c,[x,y]=Q(a,MR+36);
+    ln.setAttribute("x2",Vx+x);ln.setAttribute("y2",Vy+y);
+    if(p<1)requestAnimationFrame(f);else fin(T)};
+  requestAnimationFrame(f)}
+function fin(T){const e=Math.abs(val-T);mlog.push({T,v:val,e});st=5;
+  const lab=(v,t,c,r)=>{const a=dir===0?v:180-v,[x,y]=Q(a,MR+r);txt(mans,Vx+x,Vy+y,t,c,18)};
+  lab(val,"きみ","var(--red)",62);lab(T,"せいかい","var(--ok)",86);
+  $("mkmsg").textContent=e===0?`${T}° ぴったり！ すごい！`:`せいかいは ${T}°、きみは ${val}°。ごさ ${e}°`;
+  $("mksum").textContent=`ごうけい ごさ ${mlog.reduce((s,x)=>s+x.e,0)}°`;
+  $("mnext").hidden=false;$("mnext").textContent=mi===4?"けっかを見る":"つぎへ"}
+function mfinish(){$("mk").hidden=true;$("mres").hidden=false;const t=mlog.reduce((s,x)=>s+x.e,0);
+  $("mrs").textContent=`ごうけい ごさ ${t}°`;
+  $("mrr").innerHTML=mlog.map(x=>`${x.T}° → きみは ${x.v}°（ごさ ${x.e}°）`).join("<br>");
+  $("mrt").textContent=t===0?"ぜんぶ ぴったり！ 分度器の めいじん！":t<=5?"すごい！ ごさが とても ちいさいよ。":t<=15?"よく できました。もう少しで めいじん！":"線を あわせる ところを ていねいに やってみよう。"}
+function mstart(){try{ac()}catch(e){}mq=shuf(Array.from({length:36},(_,k)=>5*(k+1))).slice(0,5);mi=0;mlog=[];$("msc").style.display=blank?"none":"";$("mksum").textContent="ごうけい ごさ 0°";$("start").hidden=true;$("mres").hidden=true;$("mk").hidden=false;mnew()}
+$("mkstart").onclick=()=>{blank=false;mstart()};$("mkstart2").onclick=()=>{blank=true;mstart()};$("magain").onclick=mstart;
+$("mmenu").onclick=()=>{$("mres").hidden=true;$("start").hidden=false};
+$("mkback").onclick=()=>{jid++;$("mk").hidden=true;$("start").hidden=false};
+$("m-").onclick=()=>{if(st===3){val=Math.max(0,val-1);drawRay()}};
+$("m+").onclick=()=>{if(st===3){val=Math.min(180,val+1);drawRay()}};
+$("mre").onclick=reset;$("mok").onclick=judge;
+$("mnext").onclick=()=>{mi++;if(mi>=5)mfinish();else mnew()};
+document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>start(+b.dataset.step));
+[0,1].forEach(k=>$("c"+k).onclick=e=>pick(+e.currentTarget.dataset.v));
+$("hint").onclick=()=>{
+  if(answered)return;const q=qs[i];ring(q,false);
+  setFb(`きじゅんの線は ${sideName(q)}むき。${sideName(q)}がわの 0 から はじまる ${colorWord(q)}数字を 読もう。`,"");
+};
+$("next").onclick=()=>{i++;if(i>=TOTAL)finish();else show()};
+$("again").onclick=()=>start(step);
+$("rback").onclick=()=>{$("game").hidden=true;$("start").hidden=false};
+$("menu").onclick=()=>{$("result").hidden=true;$("start").hidden=false};
+</script>
+</body>
+</html>
