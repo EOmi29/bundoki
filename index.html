@@ -52,6 +52,13 @@ svg{width:100%;height:auto;display:block}
 .mkctl{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .mkctl .big{min-height:72px;font-size:24px;padding:10px 26px}
 .mkctl .next{padding:10px 44px}
+#fb2{min-height:110px;font-size:20px;line-height:1.6;background:var(--card);border-left:8px solid var(--line);border-radius:6px 14px 14px 6px;padding:12px 16px}
+#fb2.ok{border-color:var(--ok)}#fb2.ng{border-color:var(--ng)}
+.rch{min-height:84px;font-size:32px;font-weight:900;background:var(--card);border:3px solid var(--ink);border-radius:20px}
+.rch.ok{background:var(--ok);border-color:var(--ok);color:#fff}.rch.ng{background:var(--ng);border-color:var(--ng);color:#fff}
+#rdch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+#mkhint{max-width:520px;margin:0 auto 10px}
+#memo,#memo2{width:100%;height:auto;background:var(--card);border:2px solid var(--line);border-radius:14px;touch-action:none}
 @media (max-width:760px){.game{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.big:active{transform:none}}
 </style>
@@ -68,7 +75,7 @@ svg{width:100%;height:auto;display:block}
   </div>
   <div class="levels">
     <button class="big" data-step="10">10ど きざみ<small>まずは ここから</small></button>
-    <button class="big" data-step="5">5ど きざみ<small>ちょうせん</small></button></div><p class="lead" style="margin-top:34px">ぶんどきを うごかして 角を つくる</p><div class="levels"><button class="big" id="mkstart">角を つくろう ①<small>めもりを つかう</small></button><button class="big" id="mkstart2">角を つくろう ②<small>めもりなし・かんで あわせる</small></button>
+    <button class="big" data-step="5">5ど きざみ<small>ちょうせん</small></button></div><p class="lead" style="margin-top:34px">ぶんどきを うごかして 角を つくる</p><div class="levels"><button class="big" id="mkstart">角を つくろう ①<small>めもりを つかう</small></button><button class="big" id="mkstart2">角を つくろう ②<small>めもりなし・かんで あわせる</small></button></div><p class="lead" style="margin-top:34px">180°より 大きい角</p><div class="levels"><button class="big" id="rdA">よむ ①<small>180°＋のこり</small></button><button class="big" id="rdB">よむ ②<small>360°−よぶん</small></button></div><div class="levels" style="margin-top:16px"><button class="big" id="mkA">つくる 180°＋<small>めもりを つかう</small></button><button class="big" id="mkB">つくる 360°−<small>めもりを つかう</small></button><button class="big" id="mkC">つくる<small>めもりなし</small></button>
   </div>
 </section>
 
@@ -88,12 +95,27 @@ svg{width:100%;height:auto;display:block}
   </aside>
 </section>
 
+<section id="rd" class="game" hidden>
+  <div class="stage"><div class="bar"><button class="hint" id="rdback">もどる</button><span id="rdno"></span><span id="rdsc"></span></div>
+    <svg viewBox="0 0 600 400" role="img" aria-label="180度より大きい角と分度器"><g id="rdp"></g><g id="rdd"></g><g id="rdh"></g></svg></div>
+  <aside class="panel">
+    <p class="ask" id="rdask"></p>
+    <canvas id="memo" width="560" height="240"></canvas>
+    <button class="hint" id="memoclr">けす</button>
+    <div id="rdch"></div>
+    <button class="hint" id="rdhint">ヒント</button>
+    <div id="fb2" aria-live="polite"></div>
+    <button class="next" id="rdnext" hidden>つぎへ</button>
+  </aside>
+</section>
+
 <section id="mk" hidden>
   <div class="mkbar"><button class="hint" id="mkback">もどる</button><span id="mkno"></span><span id="mksum"></span></div>
   <p class="ask mkask" id="mkask"></p>
   <div class="stage"><svg id="msvg" viewBox="0 0 1000 500" role="img" aria-label="分度器で角をつくる"><g id="mpg" style="cursor:grab"></g><g id="mbase" pointer-events="none"></g><g id="mray" pointer-events="none"></g><g id="mans" pointer-events="none"></g></svg></div>
   <p class="mkmsg" id="mkmsg" aria-live="polite"></p>
-  <div class="mkctl"><button class="big" id="m-" hidden>−1°</button><button class="big" id="m+" hidden>＋1°</button><button class="big" id="mre" hidden>ぶんどきを おきなおす</button><button class="big" id="mok" hidden>この角度に きめる</button><button class="next" id="mnext" hidden>つぎへ</button></div>
+  <div id="mkhint" hidden><p class="mkmsg" id="mkeq"></p><canvas id="memo2" width="560" height="240"></canvas></div>
+  <div class="mkctl"><button class="hint" id="mkhb" hidden>ヒント</button><button class="big" id="m-" hidden>−1°</button><button class="big" id="m+" hidden>＋1°</button><button class="big" id="mre" hidden>ぶんどきを おきなおす</button><button class="big" id="mok" hidden>この角度に きめる</button><button class="next" id="mnext" hidden>つぎへ</button></div>
 </section>
 
 <section id="mres" hidden>
@@ -222,7 +244,7 @@ build();
 
 /* ===== つくるモード ===== */
 const Q=(a,r)=>[r*Math.cos(a*Math.PI/180),-r*Math.sin(a*Math.PI/180)],MR=180;
-let mq=[],mi=0,mlog=[],st=0,dir=0,Vx=330,Vy=400,pc=[0,0],pr=0,val=90,drag=null,AC=null,jid=0,blank=false;
+let mq=[],mi=0,mlog=[],st=0,dir=0,Vx=330,Vy=400,pc=[0,0],pr=0,val=90,drag=null,AC=null,jid=0,blank=false,rx=0;
 const msv=$("msvg"),mpg=$("mpg"),mray=$("mray"),mbase=$("mbase"),mans=$("mans");
 const ac=()=>{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC};
 const beep=()=>{try{const A=ac(),o=A.createOscillator(),g=A.createGain(),t=A.currentTime;o.type="square";o.frequency.value=1500;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);o.connect(g);g.connect(A.destination);o.start(t);o.stop(t+.07)}catch(e){}};
@@ -238,18 +260,18 @@ const place=()=>mpg.setAttribute("transform",`translate(${pc[0]} ${pc[1]}) rotat
 function drawBase(){mbase.innerHTML="";const s=dir===0?1:-1;
   S("line",{x1:Vx,y1:Vy,x2:Vx+s*336,y2:Vy,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"},mbase);
   txt(mbase,Vx+s*250,Vy+42,"きじゅんの線","var(--ink)",18);
-  S("circle",{cx:Vx,cy:Vy,r:6,fill:"var(--red)"},mbase);
+  if(rx==="A")S("line",{x1:Vx,y1:Vy,x2:Vx-s*336,y2:Vy,stroke:"var(--ink)","stroke-width":4,"stroke-dasharray":"12 9"},mbase);S("circle",{cx:Vx,cy:Vy,r:6,fill:"var(--red)"},mbase);{const k=dir===0?1:-1;if(rx==="A")carrow(mbase,mP,100,dir===0?180:0,k*70,"var(--ink)",4);else if(rx==="B")carrow(mbase,mP,100,dir,-k*70,"var(--ink)",4);else carrow(mbase,mP,100,dir,k*(rx==="C"?200:80),"var(--ink)",4)}
   if(st===1)S("circle",{cx:Vx,cy:Vy,r:22,fill:"none",stroke:"var(--red)","stroke-width":3,"stroke-dasharray":"6 5"},mbase)}
 function drawRay(){mray.innerHTML="";if(st<3)return;const a=dir===0?val:180-val,[x,y]=Q(a,MR+36);
   S("line",{x1:Vx,y1:Vy,x2:Vx+x,y2:Vy+y,stroke:"var(--red)","stroke-width":6,"stroke-linecap":"round"},mray);
   if(st===3)S("circle",{cx:Vx+x,cy:Vy+y,r:14,fill:"var(--red)",stroke:"var(--card)","stroke-width":3},mray)}
-function ui(){const T=mq[mi],m=["","① ぶんどきを ゆびで おさえて、まん中の点を 赤い点に あわせよう","② 赤い点を 中心に まわして、下の線を きじゅんの線に あわせよう",`③ 赤い線を うごかして ${T}° に しよう${blank?"（めもりなし！ かんで）":""}。きまったら「この角度に きめる」`];
+function ui(){const T=mq[mi],m=["","① ぶんどきを ゆびで おさえて、まん中の点を 赤い点に あわせよう",rx&&!blank?"② 分度器を 下むきに して、まっすぐな 線を きじゅんの線に あわせよう":"② 赤い点を 中心に まわして、下の線を きじゅんの線に あわせよう",rx==="A"?`③ ${T}° ＝ 180° ＋ ?°。のこりの ?° を はかって 赤い線を うごかそう`:rx==="B"?`③ ${T}° ＝ 360° − ?°。?° を はかって 赤い線を うごかそう`:`③ 赤い線を うごかして ${T}° に しよう${blank?"（めもりなし！ かんで）":""}。きまったら「この角度に きめる」`];
   $("mkmsg").textContent=m[st]||"";
-  ["m-","m+"].forEach(id=>$(id).hidden=st!==3||blank);$("mok").hidden=st!==3;$("mre").hidden=st<2||st>3;
+  ["m-","m+"].forEach(id=>$(id).hidden=st!==3||blank);$("mok").hidden=st!==3;$("mre").hidden=st<2||st>3;$("mkhb").hidden=!(rx==="A"||rx==="B")||st>3;
   drawBase();drawRay()}
-function reset(){pc=[dir===0?790:210,330];pr=(Math.random()<.5?-1:1)*(15+Math.random()*20);val=90;st=1;mans.innerHTML="";ui();place()}
-function mnew(){jid++;dir=Math.random()<.5?0:180;Vx=dir===0?330:670;$("mnext").hidden=true;$("mkno").textContent=`${mi+1} / 5 もんめ`;$("mkask").textContent=`${mq[mi]}° を つくろう`;reset()}
-function moveRay(e){const p=mp(e),dx=p[0]-Vx,dy=Vy-p[1];if(Math.hypot(dx,dy)<25)return;let a=Math.atan2(dy,dx)*180/Math.PI;if(a<0)a=a<-90?180:0;val=dir===0?Math.round(a):180-Math.round(a);drawRay()}
+function reset(){pc=[dir===0?790:210,Vy-70];pr=(rx&&!blank?180:0)+(Math.random()<.5?-1:1)*(15+Math.random()*20);val=rx?270:90;st=1;mans.innerHTML="";ui();place()}
+function mnew(){jid++;dir=Math.random()<.5?0:180;Vx=dir===0?330:670;Vy=rx?250:400;$("mnext").hidden=true;$("mkno").textContent=`${mi+1} / 5 もんめ`;$("mkask").textContent=`${mq[mi]}° を つくろう`;$("mkhint").hidden=true;reset()}
+function moveRay(e){const p=mp(e),dx=p[0]-Vx,dy=Vy-p[1];if(Math.hypot(dx,dy)<25)return;let a=Math.atan2(dy,dx)*180/Math.PI;if(rx){if(blank){const t=dir===0?a:180-a;val=Math.round(((t%360)+360)%360)}else{if(a>0)a=dx>=0?0:-180;val=Math.max(180,Math.min(360,Math.round(dir===0?360+a:180-a)))}drawRay();return}if(a<0)a=a<-90?180:0;val=dir===0?Math.round(a):180-Math.round(a);drawRay()}
 mpg.addEventListener("pointerdown",e=>{const p=mp(e);
   if(st===1)drag={ox:pc[0]-p[0],oy:pc[1]-p[1]};
   else if(st===2)drag={a0:Math.atan2(p[1]-Vy,p[0]-Vx)*180/Math.PI,r0:pr};
@@ -258,11 +280,11 @@ mpg.addEventListener("pointerdown",e=>{const p=mp(e);
 msv.addEventListener("pointerdown",e=>{if(st===3){drag={ray:1};msv.setPointerCapture(e.pointerId);moveRay(e)}});
 msv.addEventListener("pointermove",e=>{if(!drag)return;const p=mp(e);
   if(st===1){pc=[p[0]+drag.ox,p[1]+drag.oy];if(Math.hypot(pc[0]-Vx,pc[1]-Vy)<20){pc=[Vx,Vy];drag=null;beep();st=2;ui()}place()}
-  else if(st===2){pr=nrm(drag.r0+Math.atan2(p[1]-Vy,p[0]-Vx)*180/Math.PI-drag.a0);if(Math.abs(pr)<5){pr=0;drag=null;beep();st=3;ui()}place()}
+  else if(st===2){pr=nrm(drag.r0+Math.atan2(p[1]-Vy,p[0]-Vx)*180/Math.PI-drag.a0);const sn=rx&&!blank?180:0;if(Math.abs(nrm(pr-sn))<5){pr=sn;drag=null;beep();st=3;ui()}place()}
   else if(st===3&&drag.ray)moveRay(e)});
 ["pointerup","pointercancel"].forEach(t=>msv.addEventListener(t,()=>{drag=null}));
 function judge(){st=4;const id=++jid,T=mq[mi];
-  ["m-","m+","mok","mre"].forEach(x=>$(x).hidden=true);$("mkmsg").textContent="";mans.innerHTML="";drawRay();
+  ["m-","m+","mok","mre","mkhb"].forEach(x=>$(x).hidden=true);$("mkmsg").textContent="";mans.innerHTML="";drawRay();
   const ln=S("line",{x1:Vx,y1:Vy,x2:Vx,y2:Vy,stroke:"var(--ok)","stroke-width":6,"stroke-linecap":"round"},mans);
   let s0=null;
   const f=ts=>{if(id!==jid)return;if(s0===null)s0=ts;const p=Math.min(1,(ts-s0)/1400),c=T*(1-Math.pow(1-p,3)),a=dir===0?c:180-c,[x,y]=Q(a,MR+36);
@@ -279,14 +301,70 @@ function mfinish(){$("mk").hidden=true;$("mres").hidden=false;const t=mlog.reduc
   $("mrs").textContent=`ごうけい ごさ ${t}°`;
   $("mrr").innerHTML=mlog.map(x=>`${x.T}° → きみは ${x.v}°（ごさ ${x.e}°）`).join("<br>");
   $("mrt").textContent=t===0?"ぜんぶ ぴったり！ 分度器の めいじん！":t<=5?"すごい！ ごさが とても ちいさいよ。":t<=15?"よく できました。もう少しで めいじん！":"線を あわせる ところを ていねいに やってみよう。"}
-function mstart(){try{ac()}catch(e){}mq=shuf(Array.from({length:36},(_,k)=>5*(k+1))).slice(0,5);mi=0;mlog=[];$("msc").style.display=blank?"none":"";$("mksum").textContent="ごうけい ごさ 0°";$("start").hidden=true;$("mres").hidden=true;$("mk").hidden=false;mnew()}
-$("mkstart").onclick=()=>{blank=false;mstart()};$("mkstart2").onclick=()=>{blank=true;mstart()};$("magain").onclick=mstart;
+function mstart(){try{ac()}catch(e){}mq=shuf(rx?Array.from({length:35},(_,k)=>185+5*k):Array.from({length:36},(_,k)=>5*(k+1))).slice(0,5);mi=0;mlog=[];$("msc").style.display=blank?"none":"";$("mksum").textContent="ごうけい ごさ 0°";$("start").hidden=true;$("mres").hidden=true;$("mk").hidden=false;mnew()}
+$("mkstart").onclick=()=>{blank=false;rx=0;mstart()};$("mkstart2").onclick=()=>{blank=true;rx=0;mstart()};$("mkA").onclick=()=>{blank=false;rx="A";mstart()};$("mkB").onclick=()=>{blank=false;rx="B";mstart()};$("mkC").onclick=()=>{blank=true;rx="C";mstart()};$("magain").onclick=mstart;
 $("mmenu").onclick=()=>{$("mres").hidden=true;$("start").hidden=false};
 $("mkback").onclick=()=>{jid++;$("mk").hidden=true;$("start").hidden=false};
-$("m-").onclick=()=>{if(st===3){val=Math.max(0,val-1);drawRay()}};
-$("m+").onclick=()=>{if(st===3){val=Math.min(180,val+1);drawRay()}};
+$("m-").onclick=()=>{if(st===3){val=Math.max(rx?180:0,val-1);drawRay()}};
+$("m+").onclick=()=>{if(st===3){val=Math.min(rx?360:180,val+1);drawRay()}};
 $("mre").onclick=reset;$("mok").onclick=judge;
 $("mnext").onclick=()=>{mi++;if(mi>=5)mfinish();else mnew()};
+
+/* ===== 180°より大きい角：よむ ===== */
+const rF=(a,r)=>[300+r*Math.cos(a*Math.PI/180),190+r*Math.sin(a*Math.PI/180)],rP=(a,r)=>[300+r*Math.cos(a*Math.PI/180),190-r*Math.sin(a*Math.PI/180)],rR=170;
+let rdm="A",rq=[],ri=0,rsc=0,rdone=false,rend=false,pen=false;
+const mcv=$("memo"),mcx=mcv.getContext("2d"),setF2=(t,c)=>{$("fb2").textContent=t;$("fb2").className=c};
+const inkc=()=>getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#000";
+const mP=(a,r)=>[Vx+r*Math.cos(a*Math.PI/180),Vy-r*Math.sin(a*Math.PI/180)];
+function carrow(g,P,r,a0,d,col,w){const a1=a0+d,[sx,sy]=P(a0,r),[ex,ey]=P(a1,r),k=d>0?1:-1,rad=a1*Math.PI/180,tx=-Math.sin(rad)*k,ty=-Math.cos(rad)*k;
+  S("path",{d:`M${sx} ${sy}A${r} ${r} 0 ${Math.abs(d)>180?1:0} ${d>0?0:1} ${ex} ${ey}`,fill:"none",stroke:col,"stroke-width":w,"stroke-linecap":"round"},g);
+  const bx=ex-tx*16,by=ey-ty*16,nx=-ty*9,ny=tx*9;
+  S("polygon",{points:`${ex+tx*4},${ey+ty*4} ${bx+nx},${by+ny} ${bx-nx},${by-ny}`,fill:col},g)}
+function hissan(cv,a,sign,b){const c=cv.getContext("2d"),W=cv.width,H=cv.height;c.clearRect(0,0,W,H);c.save();c.globalAlpha=.6;c.fillStyle=c.strokeStyle=inkc();c.font="700 52px sans-serif";c.textAlign="right";
+  c.fillText(a,W*.62,H*.30);if(b!=="")c.fillText(b,W*.62,H*.58);c.textAlign="center";c.fillText(sign,W*.28,H*.58);c.lineWidth=4;c.beginPath();c.moveTo(W*.2,H*.66);c.lineTo(W*.66,H*.66);c.stroke();c.restore()}
+function inkOn(cv){const c=cv.getContext("2d");let on=false;const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  cv.onpointerdown=e=>{on=true;cv.setPointerCapture(e.pointerId);const [x,y]=pos(e);c.strokeStyle=inkc();c.lineWidth=3.5;c.lineCap=c.lineJoin="round";c.beginPath();c.moveTo(x,y);c.lineTo(x+.1,y);c.stroke();e.preventDefault()};
+  cv.onpointermove=e=>{if(!on)return;const [x,y]=pos(e);c.lineTo(x,y);c.stroke()};
+  cv.onpointerup=cv.onpointercancel=()=>{on=false}}
+function mkHint(){const T=mq[mi],A=rx==="A";$("mkeq").textContent=A?`${T}° ＝ 180° ＋ ?°`:`360° − ${T}° ＝ ?°`;hissan($("memo2"),A?T:360,"−",A?180:T)}
+$("mkhb").onclick=()=>{const h=$("mkhint");h.hidden=!h.hidden;if(!h.hidden)mkHint()};
+function memoInit(){hissan(mcv,rdm==="A"?"180":"360",rdm==="A"?"＋":"−","")}
+inkOn(mcv);inkOn($("memo2"));
+
+
+$("memoclr").onclick=memoInit;
+(function(){const g=$("rdp");
+  S("path",{d:`M${300-rR} 190A${rR} ${rR} 0 0 0 ${300+rR} 190L${300+rR} 168L${300-rR} 168Z`,fill:"var(--plastic)",stroke:"var(--ink)","stroke-width":2},g);
+  for(let a=0;a<=180;a+=5){const l=a%10?7:12,[x1,y1]=rF(a,rR),[x2,y2]=rF(a,rR-l);S("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":a%10?1:1.5},g)}
+  for(let v=0;v<=180;v+=10){let [x,y]=rF(v,rR-28);txt(g,x,y,v,"var(--blue)",12);[x,y]=rF(180-v,rR-46);txt(g,x,y,v,"var(--orange)",12)}
+  S("line",{x1:300-rR,y1:190,x2:300+rR,y2:190,stroke:"var(--ink)","stroke-width":2.5},g)})();
+function rdShow(){const q=rq[ri],e=360-q.T,ar=q.dir===0?-e:180+e,d=$("rdd"),A=rdm==="A";rdone=false;rend=false;d.innerHTML="";$("rdh").innerHTML="";
+  $("rdno").textContent=`${ri+1} / 5 もんめ`;$("rdsc").textContent=`せいかい ${rsc}`;
+  $("rdask").textContent=A?"赤い大きい角は 何度？（180°＋のこり）":"赤い大きい角は 何度？（360°−よぶん）";
+  if(A){const o=q.dir===0?180:0;S("line",{x1:300,y1:190,x2:rP(o,rR+24)[0],y2:190,stroke:"var(--ink)","stroke-width":4,"stroke-dasharray":"12 9"},d);
+    S("path",{d:`M${rP(q.dir,72)[0]} 190A72 72 0 0 ${q.dir===0?0:1} ${rP(o,72)[0]} 190`,fill:"none",stroke:"var(--ink)","stroke-width":3,"stroke-dasharray":"6 5"},d);txt(d,300,92,"180°","var(--ink)",18)}
+  const [bx,by]=rP(q.dir,rR+24),[tx,ty]=rP(ar,rR+24);
+  S("line",{x1:300,y1:190,x2:bx,y2:by,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"},d);
+  S("line",{x1:300,y1:190,x2:tx,y2:ty,stroke:"var(--red)","stroke-width":6,"stroke-linecap":"round"},d);
+  carrow(d,rP,46,q.dir,q.dir===0?q.T:-q.T,"var(--red)",4);carrow(d,rP,100,A?(q.dir===0?180:0):q.dir,A?(q.dir===0?q.s:-q.s):(q.dir===0?-q.s:q.s),"var(--ink)",5);
+  
+  const [qx,qy]=rP(q.dir===0?q.T/2:180-q.T/2,26);txt(d,qx,qy,"?","var(--red)",24,900);
+  const w=A?360-q.s:180+q.s,o=shuf([q.T,q.s,w]),c=$("rdch");c.innerHTML="";
+  o.forEach(v=>{const b=document.createElement("button");b.className="rch";b.textContent=v+"°";b.dataset.v=v;b.onclick=()=>rdPick(v);c.appendChild(b)});
+  memoInit();$("rdhint").disabled=false;setF2("ぐるっと まわった 角は 何度かな？ けいさんは ここに かいてね。","");$("rdnext").hidden=true}
+function rdRing(q,full){const g=$("rdh");g.innerHTML="";const zr=rdm==="A"?q.dir===180:q.dir===0,c=zr?"var(--blue)":"var(--orange)",pos=v=>zr?rF(v,rR-28):rF(180-v,rR-46);
+  (full?[0,q.s]:[0]).forEach(v=>{const [x,y]=pos(v);S("circle",{cx:x,cy:y,r:14,fill:"none",stroke:c,"stroke-width":4},g)})}
+function rdPick(v){if(rdone)return;rdone=true;const q=rq[ri],ok=v===q.T,A=rdm==="A",f=A?`180° ＋ ${q.s}° ＝ ${q.T}°`:`360° − ${q.s}° ＝ ${q.T}°`;if(ok)rsc++;
+  document.querySelectorAll(".rch").forEach(b=>{b.disabled=true;if(+b.dataset.v===q.T)b.classList.add("ok");else if(+b.dataset.v===v)b.classList.add("ng")});
+  rdRing(q,true);$("rdhint").disabled=true;$("rdsc").textContent=`せいかい ${rsc}`;
+  setF2(ok?`せいかい！ ${f}`:v===q.s?`${q.s}° は 分度器で はかった ところだけだよ。${A?"180° を たそう":"360° から ひこう"}。 ${f}`:`はんたいがわの めもりを よんだかも。はかった ところは ${q.s}°。 ${f}`,ok?"ok":"ng");
+  $("rdnext").hidden=false;$("rdnext").textContent=ri===4?"けっかを見る":"つぎへ"}
+$("rdhint").onclick=()=>{if(rdone)return;const q=rq[ri],zr=rdm==="A"?q.dir===180:q.dir===0;rdRing(q,false);
+  setF2(rdm==="A"?`点線と 赤い線の あいだを はかるよ。点線がわの 0（${zr?"右":"左"}）から 読もう。そのあと 180° を たす。`:`ぐるっと 反対がわの 小さい角を はかるよ。きじゅんの線がわの 0（${zr?"右":"左"}）から 読もう。そのあと 360° から ひく。`,"")};
+$("rdnext").onclick=()=>{if(rend){rdStart(rdm);return}if(ri===4){rend=true;$("rdnext").textContent="もういちど";setF2(`${rsc} / 5 せいかい！`,"");return}ri++;rdShow()};
+function rdStart(m){rdm=m;const pool=shuf([...Array(35).keys()].map(k=>5*(k+1)).filter(s=>s!==90)),ds=shuf([0,0,180,180,Math.random()<.5?0:180]);
+  rq=ds.map((dir,k)=>({dir,s:pool[k],T:m==="A"?180+pool[k]:360-pool[k]}));ri=0;rsc=0;$("start").hidden=true;$("rd").hidden=false;rdShow()}
+$("rdA").onclick=()=>rdStart("A");$("rdB").onclick=()=>rdStart("B");$("rdback").onclick=()=>{$("rd").hidden=true;$("start").hidden=false};
 document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>start(+b.dataset.step));
 [0,1].forEach(k=>$("c"+k).onclick=e=>pick(+e.currentTarget.dataset.v));
 $("hint").onclick=()=>{
