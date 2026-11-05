@@ -57,8 +57,27 @@ svg{width:100%;height:auto;display:block}
 .rch{min-height:84px;font-size:32px;font-weight:900;background:var(--card);border:3px solid var(--ink);border-radius:20px}
 .rch.ok{background:var(--ok);border-color:var(--ok);color:#fff}.rch.ng{background:var(--ng);border-color:var(--ng);color:#fff}
 #rdch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-#mkhint{max-width:520px;margin:0 auto 10px}
+#mkhint{width:300px;flex:none}
 #memo,#memo2{width:100%;height:auto;background:var(--card);border:2px solid var(--line);border-radius:14px;touch-action:none}
+#mk:not([hidden]){display:flex;flex-direction:column;height:calc(100vh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#mkmain{display:flex;gap:12px;flex:1 1 0;min-height:0}
+#mk .stage{flex:1;min-width:0;display:flex;flex-direction:column;padding:4px 8px}
+#msvg{flex:1 1 0;min-height:0;width:100%;height:100px}
+#mk .mkask{font-size:clamp(22px,3.6vw,32px);margin:0 0 6px}
+#mk .mkbar{margin-bottom:4px;font-size:18px}
+#mk .hint{min-height:44px;padding:4px 18px;font-size:17px}
+#mk .mkmsg{min-height:0;font-size:18px;margin:6px 0}
+#mk .mkctl{gap:10px;flex:none}
+#mk .mkctl .big{min-height:56px;font-size:20px;padding:6px 20px;box-shadow:0 3px 0 var(--ink)}
+#mk .mkctl .next{min-height:56px;font-size:20px;padding:6px 36px}
+#maru{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:50;opacity:0}
+#maru svg{width:min(64vmin,520px);height:auto;transform:rotate(-100deg)}
+#maru circle{fill:none;stroke:var(--red);stroke-width:14;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+#maru.on{animation:mfade 1.9s ease forwards}
+#maru.on circle{animation:mdraw .55s ease-out forwards}
+@keyframes mdraw{to{stroke-dashoffset:0}}
+@keyframes mfade{0%,70%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#maru.on circle{animation:none;stroke-dashoffset:0}}
 @media (max-width:760px){.game{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.big:active{transform:none}}
 </style>
@@ -75,7 +94,7 @@ svg{width:100%;height:auto;display:block}
   </div>
   <div class="levels">
     <button class="big" data-step="10">10ど きざみ<small>まずは ここから</small></button>
-    <button class="big" data-step="5">5ど きざみ<small>ちょうせん</small></button></div><p class="lead" style="margin-top:34px">ぶんどきを うごかして 角を つくる</p><div class="levels"><button class="big" id="mkstart">角を つくろう ①<small>めもりを つかう</small></button><button class="big" id="mkstart2">角を つくろう ②<small>めもりなし・かんで あわせる</small></button></div><p class="lead" style="margin-top:34px">180°より 大きい角</p><div class="levels"><button class="big" id="rdA">よむ ①<small>180°＋のこり</small></button><button class="big" id="rdB">よむ ②<small>360°−よぶん</small></button></div><div class="levels" style="margin-top:16px"><button class="big" id="mkA">つくる 180°＋<small>めもりを つかう</small></button><button class="big" id="mkB">つくる 360°−<small>めもりを つかう</small></button><button class="big" id="mkC">つくる<small>めもりなし</small></button>
+    <button class="big" data-step="5">5ど きざみ<small>ちょうせん</small></button></div><p class="lead" style="margin-top:34px">ぶんどきを うごかして 角度を つくる</p><div class="levels"><button class="big" id="mkstart">角度を つくろう ①<small>めもりを つかう</small></button><button class="big" id="mkstart2">角度を つくろう ②<small>めもりなし・かんで あわせる</small></button></div><p class="lead" style="margin-top:34px">180°より 大きい角</p><div class="levels"><button class="big" id="rdA">よむ ①<small>180°＋のこり</small></button><button class="big" id="rdB">よむ ②<small>360°−よぶん</small></button></div><div class="levels" style="margin-top:16px"><button class="big" id="mkA">大きな角度を つくろう<small>たし算</small></button><button class="big" id="mkB">大きな角度を つくろう<small>ひき算</small></button><button class="big" id="mkC">角度を つくる<small>めもりなし</small></button>
   </div>
 </section>
 
@@ -112,14 +131,14 @@ svg{width:100%;height:auto;display:block}
 <section id="mk" hidden>
   <div class="mkbar"><button class="hint" id="mkback">もどる</button><span id="mkno"></span><span id="mksum"></span></div>
   <p class="ask mkask" id="mkask"></p>
-  <div class="stage"><svg id="msvg" viewBox="0 0 1000 500" role="img" aria-label="分度器で角をつくる"><g id="mpg" style="cursor:grab"></g><g id="mbase" pointer-events="none"></g><g id="mray" pointer-events="none"></g><g id="mans" pointer-events="none"></g></svg></div>
+  <div id="mkmain"><div class="stage"><svg id="msvg" viewBox="0 0 1000 500" role="img" aria-label="分度器で角をつくる"><g id="mpg" style="cursor:grab"></g><g id="mbase" pointer-events="none"></g><g id="mray" pointer-events="none"></g><g id="mans" pointer-events="none"></g></svg></div><div id="mkhint" hidden><p class="mkmsg" id="mkeq"></p><canvas id="memo2" width="400" height="300"></canvas></div></div>
   <p class="mkmsg" id="mkmsg" aria-live="polite"></p>
-  <div id="mkhint" hidden><p class="mkmsg" id="mkeq"></p><canvas id="memo2" width="560" height="240"></canvas></div>
+  
   <div class="mkctl"><button class="hint" id="mkhb" hidden>ヒント</button><button class="big" id="m-" hidden>−1°</button><button class="big" id="m+" hidden>＋1°</button><button class="big" id="mre" hidden>ぶんどきを おきなおす</button><button class="big" id="mok" hidden>この角度に きめる</button><button class="next" id="mnext" hidden>つぎへ</button></div>
 </section>
 
 <section id="mres" hidden>
-  <p class="lead">角を つくろう けっか</p>
+  <p class="lead">角度を つくろう けっか</p>
   <p class="score" id="mrs"></p>
   <div class="rows" id="mrr"></div>
   <p class="tip" id="mrt"></p>
@@ -138,6 +157,7 @@ svg{width:100%;height:auto;display:block}
 </section>
 
 </div>
+<div id="maru" aria-hidden="true"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="82" pathLength="1"/></svg></div>
 <script>
 const NS="http://www.w3.org/2000/svg",cx=300,cy=290,R=250,TOTAL=5;
 const $=id=>document.getElementById(id);
@@ -204,7 +224,7 @@ function ring(q,full){
 function pick(v){
   if(answered)return;answered=true;
   const q=qs[i],ok=v===q.ans;
-  if(ok)score++;
+  if(ok){score++;maru()}
   log.push({side:q.side,ok});
   document.querySelectorAll(".choice").forEach(b=>{
     b.disabled=true;
@@ -291,7 +311,7 @@ function judge(){st=4;const id=++jid,T=mq[mi];
     ln.setAttribute("x2",Vx+x);ln.setAttribute("y2",Vy+y);
     if(p<1)requestAnimationFrame(f);else fin(T)};
   requestAnimationFrame(f)}
-function fin(T){const e=Math.abs(val-T);mlog.push({T,v:val,e});st=5;
+function fin(T){const e=Math.abs(val-T);mlog.push({T,v:val,e});st=5;if(e===0)maru();
   const lab=(v,t,c,r)=>{const a=dir===0?v:180-v,[x,y]=Q(a,MR+r);txt(mans,Vx+x,Vy+y,t,c,18)};
   lab(val,"きみ","var(--red)",62);lab(T,"せいかい","var(--ok)",86);
   $("mkmsg").textContent=e===0?`${T}° ぴったり！ すごい！`:`せいかいは ${T}°、きみは ${val}°。ごさ ${e}°`;
@@ -326,6 +346,7 @@ function inkOn(cv){const c=cv.getContext("2d");let on=false;const pos=e=>{const 
   cv.onpointerdown=e=>{on=true;cv.setPointerCapture(e.pointerId);const [x,y]=pos(e);c.strokeStyle=inkc();c.lineWidth=3.5;c.lineCap=c.lineJoin="round";c.beginPath();c.moveTo(x,y);c.lineTo(x+.1,y);c.stroke();e.preventDefault()};
   cv.onpointermove=e=>{if(!on)return;const [x,y]=pos(e);c.lineTo(x,y);c.stroke()};
   cv.onpointerup=cv.onpointercancel=()=>{on=false}}
+function maru(){const m=$("maru");m.classList.remove("on");void m.offsetWidth;m.classList.add("on")}
 function mkHint(){const T=mq[mi],A=rx==="A";$("mkeq").textContent=A?`${T}° ＝ 180° ＋ ?°`:`360° − ${T}° ＝ ?°`;hissan($("memo2"),A?T:360,"−",A?180:T)}
 $("mkhb").onclick=()=>{const h=$("mkhint");h.hidden=!h.hidden;if(!h.hidden)mkHint()};
 function memoInit(){hissan(mcv,rdm==="A"?"180":"360",rdm==="A"?"＋":"−","")}
@@ -354,7 +375,7 @@ function rdShow(){const q=rq[ri],e=360-q.T,ar=q.dir===0?-e:180+e,d=$("rdd"),A=rd
   memoInit();$("rdhint").disabled=false;setF2("ぐるっと まわった 角は 何度かな？ けいさんは ここに かいてね。","");$("rdnext").hidden=true}
 function rdRing(q,full){const g=$("rdh");g.innerHTML="";const zr=rdm==="A"?q.dir===180:q.dir===0,c=zr?"var(--blue)":"var(--orange)",pos=v=>zr?rF(v,rR-28):rF(180-v,rR-46);
   (full?[0,q.s]:[0]).forEach(v=>{const [x,y]=pos(v);S("circle",{cx:x,cy:y,r:14,fill:"none",stroke:c,"stroke-width":4},g)})}
-function rdPick(v){if(rdone)return;rdone=true;const q=rq[ri],ok=v===q.T,A=rdm==="A",f=A?`180° ＋ ${q.s}° ＝ ${q.T}°`:`360° − ${q.s}° ＝ ${q.T}°`;if(ok)rsc++;
+function rdPick(v){if(rdone)return;rdone=true;const q=rq[ri],ok=v===q.T,A=rdm==="A",f=A?`180° ＋ ${q.s}° ＝ ${q.T}°`:`360° − ${q.s}° ＝ ${q.T}°`;if(ok){rsc++;maru()}
   document.querySelectorAll(".rch").forEach(b=>{b.disabled=true;if(+b.dataset.v===q.T)b.classList.add("ok");else if(+b.dataset.v===v)b.classList.add("ng")});
   rdRing(q,true);$("rdhint").disabled=true;$("rdsc").textContent=`せいかい ${rsc}`;
   setF2(ok?`せいかい！ ${f}`:v===q.s?`${q.s}° は 分度器で はかった ところだけだよ。${A?"180° を たそう":"360° から ひこう"}。 ${f}`:`はんたいがわの めもりを よんだかも。はかった ところは ${q.s}°。 ${f}`,ok?"ok":"ng");
